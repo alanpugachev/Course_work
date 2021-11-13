@@ -7,8 +7,18 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras import utils
 
-#TODO
-#def normalization(data, x, y):
+def normalization(data):
+    least_element = np.min(data)
+    max_element = np.max(data)
+    dim = data.shape
+    x = dim[0]
+    y = dim[1]
+
+    for i in range(x):
+        for j in range(y):
+            data[i][j] = ((data[i][j] - least_element) / (max_element - least_element))
+
+    return data
 
 # main
 training_data = read_csv('training_data.csv')
@@ -18,6 +28,8 @@ training_data = training_data.values
 answers = training_data[:,0]
 answers = utils.to_categorical(answers)
 data = training_data[:,1:]
+data = normalization(data)
+print(data)
 
 #——creating AI-model
 model = Sequential()
