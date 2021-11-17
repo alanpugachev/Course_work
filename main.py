@@ -22,17 +22,18 @@ def normalization(data):
     return data
 
 # main
-training_data = read_csv('training_data.csv')
-training_data = training_data.values
+data = read_csv('training_data.csv')
+data = data.values
 
 #—prepare data
-answers = training_data[:,0]
+answers = data[:,0]
 answers = utils.to_categorical(answers)
-data = training_data[:,1:]
-data = normalization(data)
-
-testing_data = data[55:,:]
-conrol_data = testing_data[8:,:]
+training_data = data[:55,1:]
+training_data = normalization(training_data)
+testing_data = data[55:63,1:]
+testing_data = normalization(testing_data) #batchnormalization
+control_data = data[63:,1:]
+control_data = normalization(control_data)
 
 #——creating AI-model
 model = Sequential()
