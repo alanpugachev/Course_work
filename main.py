@@ -6,6 +6,7 @@ from numpy.lib.npyio import genfromtxt
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras import utils
+from tensorflow.python.keras.layers.core import Dropout
 
 def normalization(data):
     least_element = np.min(data)
@@ -29,12 +30,16 @@ answers = training_data[:,0]
 answers = utils.to_categorical(answers)
 data = training_data[:,1:]
 data = normalization(data)
-print(data)
+
+testing_data = data[55:,:]
+conrol_data = testing_data[8:,:]
 
 #——creating AI-model
 model = Sequential()
-model.add(Dense(128, activation='relu', input_dim=7))
+model.add(Dense(64, activation='linear', input_dim=7))
+model.add(Dense(64, activation='selu'))
+model.add(Dropout(0.25))
 model.add(Dense(64, activation='relu'))
 model.add(Dense(10, activation='softmax'))
-model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
-model.fit(data, answers, batch_size=1, epochs=100, verbose=1)
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.fit(data, answers, batch_size=1, epochs=250, verbose=1)
