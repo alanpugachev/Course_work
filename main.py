@@ -32,11 +32,16 @@ x_val = data[63:,1:]
 #——creating NN-Model
 model = Sequential()
 
-model.add(Dense(64, input_dim=7))
+model.add(Dense(32, input_dim=7))
+model.add(BatchNormalization())
+model.add(Activation('tanh'))
+model.add(Dropout(0.25))
+
+model.add(Dense(128))
 model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(Dropout(0.25))
 
 model.add(Dense(10, activation='softmax'))
-model.compile(loss='categorical_crossentropy', optimizer='SGD', metrics=['accuracy'])
-model.fit(x_train, y_train, batch_size=55, epochs=100, verbose=1)
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.fit(x_train, y_train, batch_size=11, epochs=100, verbose=1, validation_data=(x_val, y_val))
