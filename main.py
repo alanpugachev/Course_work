@@ -39,9 +39,9 @@ model.add(Dropout(0.25))
 
 model.add(Dense(128))
 model.add(BatchNormalization())
-model.add(Activation('relu'))
+model.add(Activation('selu'))
 model.add(Dropout(0.25))
 
 model.add(Dense(10, activation='softmax'))
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-model.fit(x_train, y_train, batch_size=11, epochs=100, verbose=1, validation_data=(x_val, y_val))
+model.fit(x_train, y_train, batch_size=5, epochs=100, verbose=1, validation_data=(x_val, y_val))
