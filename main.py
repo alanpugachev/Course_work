@@ -1,5 +1,6 @@
 # imports
 import numpy as np
+import matplotlib.pyplot as plt
 from pandas import read_csv
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, BatchNormalization
@@ -44,4 +45,34 @@ model.add(Dropout(0.25))
 
 model.add(Dense(10, activation='softmax'))
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-model.fit(x_train, y_train, batch_size=5, epochs=100, verbose=1, validation_data=(x_val, y_val))
+history = model.fit(x_train, y_train, batch_size=5, epochs=50, verbose=1, validation_data=(x_val, y_val))
+
+
+#———graphics
+history_dict = history.history
+loss_values = history_dict['loss']
+val_loss_values = history_dict['val_loss']
+
+epochs = range(1, len(loss_values) + 1)
+
+#----------loss graphic----------#
+plt.plot(epochs, loss_values, 'bo', label='Training loss') 
+plt.plot(epochs, val_loss_values, 'b', label='Validation loss') 
+plt.title('Training and validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+#----------accuracy graphic----------#
+plt.clf()
+acc_values = history_dict['accuracy']
+val_acc_values = history_dict['val_accuracy']
+
+plt.plot(epochs, acc_values, 'bo', label='Training acc')
+plt.plot(epochs, val_acc_values, 'b', label='Validation acc')
+plt.title('Training and validation accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
