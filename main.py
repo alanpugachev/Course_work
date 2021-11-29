@@ -2,10 +2,30 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from pandas import read_csv
+from tensorflow.keras import models
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, BatchNormalization
 from tensorflow.keras import utils
 from tensorflow.python.keras.layers.core import Activation, Dropout
+from keras_tuner import RandomSearch, Hyperband, BayesianOptimization
+
+
+def build_model(hp):
+    model = Sequential()
+    activation_choice = hp.Choice('activation', values=['relu', 'sigmoid', 'tanh', 'elu', 'selu'])
+
+    model.add(Dense(units=hp.Int('units_input', min_value=512, max_value=1024, step=32), input_dim=7, activation=activation_choice))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.25))
+
+    model.add(Dense(units=hp.Int('units_hidden', min_value=128, max_value=600, step=32), activation=activation_choice))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.25))
+
+    model.add(Dense(10, activation='softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer=hp.Choice('optimizer', values=['adam', 'SGD', 'rmsprop']), metrics=['accuracy'])
+
+    return model
 
 
 # main
@@ -31,48 +51,48 @@ x_val = data[63:,1:]
 
 
 #——creating NN-Model
-model = Sequential()
+tuner = BayesianOptimization(
+    build_model,
+    objective='val_accuracy',
+    max_trials=10,
+    directory='models/rating'
+)
+tuner.search(x_train, y_train, batch_size=5, epochs=20, validation_split=0.2 ,verbose=1, validation_data=(x_val, y_val))
+print(tuner.get_best_models(num_models=3))
+models = tuner.get_best_models(num_models=3)
 
-model.add(Dense(32, input_dim=7))
-model.add(BatchNormalization())
-model.add(Activation('tanh'))
-model.add(Dropout(0.25))
-
-model.add(Dense(128))
-model.add(BatchNormalization())
-model.add(Activation('selu'))
-model.add(Dropout(0.25))
-
-model.add(Dense(10, activation='softmax'))
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-history = model.fit(x_train, y_train, batch_size=5, epochs=50, verbose=1, validation_data=(x_val, y_val))
+for model in models:
+    model.summary()
+    model.evaluate(x_test, y_test)
+    print()
 
 
-#———graphics
-history_dict = history.history
-loss_values = history_dict['loss']
-val_loss_values = history_dict['val_loss']
 
-epochs = range(1, len(loss_values) + 1)
+# #———graphics
+# history_dict = history.history
+# loss_values = history_dict['loss']
+# val_loss_values = history_dict['val_loss']
 
-#----------loss graphic----------#
-plt.plot(epochs, loss_values, 'bo', label='Training loss') 
-plt.plot(epochs, val_loss_values, 'b', label='Validation loss') 
-plt.title('Training and validation loss')
-plt.xlabel('Epochs')
-plt.ylabel('Loss')
-plt.legend()
-plt.show()
+# epochs = range(1, len(loss_values) + 1)
 
-#----------accuracy graphic----------#
-plt.clf()
-acc_values = history_dict['accuracy']
-val_acc_values = history_dict['val_accuracy']
+# #----------loss graphic----------#
+# plt.plot(epochs, loss_values, 'bo', label='Training loss') 
+# plt.plot(epochs, val_loss_values, 'b', label='Validation loss') 
+# plt.title('Training and validation loss')
+# plt.xlabel('Epochs')
+# plt.ylabel('Loss')
+# plt.legend()
+# plt.show()
 
-plt.plot(epochs, acc_values, 'bo', label='Training acc')
-plt.plot(epochs, val_acc_values, 'b', label='Validation acc')
-plt.title('Training and validation accuracy')
-plt.xlabel('Epochs')
-plt.ylabel('Accuracy')
-plt.legend()
+# #----------accuracy graphic----------#
+# plt.clf()
+# acc_values = history_dict['accuracy']
+# val_acc_values = history_dict['val_accuracy']
+
+# plt.plot(epochs, acc_values, 'bo', label='Training acc')
+# plt.plot(epochs, val_acc_values, 'b', label='Validation acc')
+# plt.title('Training and validation accuracy')
+# plt.xlabel('Epochs')
+# plt.ylabel('Accuracy')
+# plt.legend()
 plt.show()
