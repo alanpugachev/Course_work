@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pandas import read_csv
 from tensorflow.keras import models
+from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, BatchNormalization
 from tensorflow.keras import utils
@@ -18,9 +19,9 @@ def build_model(hp):
     model.add(BatchNormalization())
     model.add(Dropout(0.25))
 
-    model.add(Dense(units=hp.Int('units_hidden', min_value=128, max_value=600, step=32), activation=activation_choice))
-    model.add(BatchNormalization())
-    model.add(Dropout(0.25))
+    for i in range(hp.Int('num_layers', 2, 4)):
+        model.add(layers.Dense(units=hp.Int('units_' + str(i),
+        min_value=128, max_value=1024, step=32), activation='elu'))
 
     model.add(Dense(10, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer=hp.Choice('optimizer', values=['adam', 'SGD', 'rmsprop']), metrics=['accuracy'])
@@ -51,13 +52,12 @@ x_val = data[63:,1:]
 
 
 #——creating NN-Model
-tuner = BayesianOptimization(
+tuner = Hyperband(
     build_model,
     objective='val_accuracy',
-    max_trials=10,
     directory='models/rating'
 )
-tuner.search(x_train, y_train, batch_size=5, epochs=20, validation_split=0.2 ,verbose=1, validation_data=(x_val, y_val))
+tuner.search(x_train, y_train, batch_size=10, epochs=50, validation_split=0.2 ,verbose=1, validation_data=(x_val, y_val))
 print(tuner.get_best_models(num_models=3))
 models = tuner.get_best_models(num_models=3)
 
@@ -95,4 +95,4 @@ for model in models:
 # plt.xlabel('Epochs')
 # plt.ylabel('Accuracy')
 # plt.legend()
-plt.show()
+# plt.show()
