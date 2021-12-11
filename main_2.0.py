@@ -15,7 +15,7 @@ from keras_tuner import RandomSearch, Hyperband, BayesianOptimization
 # functions
 def build_model(hp):
     model = Sequential()
-    activation_choice = hp.Choice('activation', values=['relu', 'sigmoid', 'tanh', 'elu', 'selu'])
+    activation_choice = hp.Choice('activation', values=['relu', 'sigmoid', 'tanh', 'elu', 'selu', 'linear'])
 
     model.add(Dense(units=hp.Int('units_input', min_value=128, max_value=1024, step=32), input_dim=29, activation=activation_choice))
     model.add(BatchNormalization())
@@ -56,13 +56,12 @@ x_test = np.asarray(x_test).astype('float32')
 
 
 #——creating NN-Model
-tuner = BayesianOptimization(
+tuner = Hyperband(
     build_model,
-    max_trials=200,
     objective='val_accuracy',
     directory='models'
 )
-tuner.search(x_train, y_train, batch_size=45, epochs=25, validation_split=0.2 ,verbose=1, validation_data=(x_val, y_val))
+tuner.search(x_train, y_train, batch_size=90, epochs=25, validation_split=0.2 ,verbose=1, validation_data=(x_val, y_val))
 print(tuner.get_best_models(num_models=3))
 models = tuner.get_best_models(num_models=3)
 
