@@ -49,7 +49,7 @@ x_val = data[90:100,3:]
 x_val = np.asarray(x_val).astype('float32')
 
 #----------testing----------#
-y_test = data[100:,2] #prepare answers for testing (55-62 elements)
+y_test = data[100:,2] #prepare answers for testing
 y_test = utils.to_categorical(y_test)
 x_test = data[100:,3:] #prepare dataset for testing
 x_test = np.asarray(x_test).astype('float32')
@@ -61,11 +61,41 @@ tuner = Hyperband(
     objective='val_accuracy',
     directory='models'
 )
-tuner.search(x_train, y_train, batch_size=90, epochs=25, validation_split=0.2 ,verbose=1, validation_data=(x_val, y_val))
-print(tuner.get_best_models(num_models=3))
-models = tuner.get_best_models(num_models=3)
+tuner.search(x_train, y_train, batch_size=9, epochs=10, validation_split=0.2 ,verbose=1, validation_data=(x_val, y_val))
+print(tuner.get_best_models(num_models=1))
+models = tuner.get_best_models(num_models=1)
 
 for model in models:
     model.summary()
     model.evaluate(x_test, y_test)
     print()
+
+
+# #———graphics
+# history_dict = history.history
+# loss_values = history_dict['loss']
+# val_loss_values = history_dict['val_loss']
+
+# epochs = range(1, len(loss_values) + 1)
+
+# #----------loss graphic----------#
+# plt.plot(epochs, loss_values, 'bo', label='Training loss') 
+# plt.plot(epochs, val_loss_values, 'b', label='Validation loss') 
+# plt.title('Training and validation loss')
+# plt.xlabel('Epochs')
+# plt.ylabel('Loss')
+# plt.legend()
+# plt.show()
+
+# #----------accuracy graphic----------#
+# plt.clf()
+# acc_values = history_dict['accuracy']
+# val_acc_values = history_dict['val_accuracy']
+
+# plt.plot(epochs, acc_values, 'bo', label='Training acc')
+# plt.plot(epochs, val_acc_values, 'b', label='Validation acc')
+# plt.title('Training and validation accuracy')
+# plt.xlabel('Epochs')
+# plt.ylabel('Accuracy')
+# plt.legend()
+# plt.show()
